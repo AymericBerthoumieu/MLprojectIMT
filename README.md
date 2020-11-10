@@ -1,2 +1,2 @@
 # MLprojectIMT
-Small machine learning project at IMT Atlantique.
+A mini machine learning project at IMT Atlantique.
