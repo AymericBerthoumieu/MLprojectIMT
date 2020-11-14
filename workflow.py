@@ -4,6 +4,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.model_selection import KFold
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.svm import SVR
+from sklearn.metrics import mean_squared_error
+
 
 
 
@@ -27,6 +29,22 @@ def split_data_train_test(data_df,label_column_name, test_size=0.3, random_state
     X_train, X_test, y_train, y_test = train_test_split(features_data_df, label,
                                                         test_size=test_size, random_state=random_state)
     return X_train, X_test, y_train, y_test
+
+def apply_training(X_train, y_train, model): ### By Jéhoiakim KINGNE
+    model.fit(X_train,y_train)
+    return model
+
+def apply_testing(X_test, model): ### By Jéhoiakim KINGNE
+    return model.predict(X_test)
+
+def train_test_stage(data_df, label_column_name, model): ### By Jéhoiakim KINGNE
+    X_train, X_test, y_train, y_test = split_data_train_test(data_df,label_column_name)
+    model = apply_training(X_train, y_train, model)
+    y_pred = apply_testing(X_test, model)
+    return y_test, y_pred
+
+def assess_prediction(y_test,y_pred): ### By Jéhoiakim KINGNE
+    return mean_squared_error(y_test,y_pred)
 
 def apply_kfold_cross_validation(data_df, label_column_name, model, kernel_list,
                                  n_folds=10, scale_data = True, random_state=42, shuffle=True): ### By Jéhoiakim KINGNE
