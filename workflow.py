@@ -98,7 +98,7 @@ def apply_kfold_cross_validation(data_df, label_column_name, model, kernel_list,
 
 
 if __name__ == '__main__':
-    path_to_data = 'HousingData.csv'
+    path_to_data = ''
     my_data = pd.read_csv(path_to_data)
 
 
