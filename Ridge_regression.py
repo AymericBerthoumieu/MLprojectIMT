@@ -9,7 +9,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.linear_model import Ridge
 
 
-def ridge_test(df, target, test_split, α):
+def ridge_analysis(df, target, test_split, α):
     X = df.drop(columns=target)
     X = preprocessing.scale(X)
     y = df[target].to_numpy()
@@ -37,3 +37,17 @@ def ridge_test(df, target, test_split, α):
     plt.show()
     # return ridge_df
 
+
+def feature_selection(df, target, test_split, α, thresh):
+    X = df.drop(columns=target)
+    X = preprocessing.scale(X)
+    y = df[target].to_numpy()
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_split)
+
+    ridge_reg = Ridge(alpha=α)
+    ridge_reg.fit(X_train, y_train)
+    abs_coef = abs(ridge_reg.coef_)
+    get_features = np.where(abs_coef > thresh)[0]
+    col_df = list(df.columns)
+    list_features = [col_df[i] for i in get_features]
+    return list_features
