@@ -95,3 +95,23 @@ def apply_kfold_cross_validation(data_df, label_column_name, model, kernel_list,
             else:
                 mean_scores[kernel] = current_model.score(X_test, y_test)/n_folds
     return mean_scores
+
+
+if __name__ == '__main__':
+    path_to_data = 'HousingData.csv'
+    my_data = pd.read_csv(path_to_data)
+
+
+    label_name_to_predict = 'MEDV'
+    maximum_categorical_values = 2
+
+    kernel_list = ['linear', 'poly', 'rbf', 'sigmoid']
+    model = SVR
+
+    preprocessed_data = DataPreparation(my_data, limitCategoricalNumerical=maximum_categorical_values)
+    best_kernel = 'linear'
+
+    y_test, y_pred = train_test_stage(preprocessed_data, label_name_to_predict, model(kernel=best_kernel))
+    assess_prediction(y_test, y_pred)
+
+    print('O')
