@@ -38,7 +38,7 @@ def ridge_analysis(df, target, test_split, α):
     # return ridge_df
 
 
-def feature_selection(df, target, test_split, α, thresh):
+def feature_selection(df, target, test_split, α=50, thresh=50):
     X = df.drop(columns=target)
     X = preprocessing.scale(X)
     y = df[target].to_numpy()
