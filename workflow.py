@@ -2,7 +2,10 @@ import pandas as pd
 import random as rd
 import copy
 
-def DataPreparation(data, limitCategoricalNumerical:int=2):
+
+##################### Aymeric BERTHOUMIEU #####################
+
+def DataPreparation(data, limitCategoricalNumerical:int=2): ### Aymeric BERTHOUMIEU
     """
     :param data: (pandas DataFrame) data to process
     :param limitCategoricalNumerical: (int) maximal number of values to consider the column as categorical.
