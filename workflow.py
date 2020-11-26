@@ -7,6 +7,8 @@ from sklearn.model_selection import KFold
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.svm import SVR
 from sklearn.metrics import mean_squared_error
+from sklearn.linear_model import LinearRegression
+from sklearn import preprocessing
 
 
 
@@ -44,6 +46,23 @@ def DataPreparation(data, limitCategoricalNumerical:int=2): ### Aymeric BERTHOUM
     workingData = pd.get_dummies(workingData)
 
     return workingData
+
+##################### Bich-Tien PHAN #######################
+
+def feature_selection(df, target, test_split, α=50, thresh=50):
+    X = df.drop(columns=target)
+    X = preprocessing.scale(X)
+    y = df[target].to_numpy()
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_split)
+
+    ridge_reg = Ridge(alpha=α)
+    ridge_reg.fit(X_train, y_train)
+    abs_coef = abs(ridge_reg.coef_)
+    abs_coef_percent = abs_coef / max(abs_coef) * 100
+    get_features = np.where(abs_coef_percent > thresh)[0]
+    col_df = list(df.columns)
+    list_features = [col_df[i] for i in get_features]
+    return list_features
 
 ##################### Jéhoiakim KINGNE #####################
 
@@ -110,6 +129,9 @@ if __name__ == '__main__':
 
     preprocessed_data = DataPreparation(my_data, limitCategoricalNumerical=maximum_categorical_values)
     best_kernel = 'linear'
+    test_split = 0.3
+    feature_columns = feature_selection(preprocessed_data, label_name_to_predict, test_split)
+    preprocessed_data = preprocessed_data[feature_columns]
 
     y_test, y_pred = train_test_stage(preprocessed_data, label_name_to_predict, model(kernel=best_kernel))
     assess_prediction(y_test, y_pred)
