@@ -58,6 +58,7 @@ def feature_selection(df, target, test_split, α=50, thresh=50): ### Bich-Tien P
     :param thresh: (float) parameter to select the significant features
     :return: list of colums to keep after ridge regression
     """
+    #Prepocessing for ridge regression
     X = df.drop(columns=target)
     X = preprocessing.scale(X)
     y = df[target].to_numpy()
@@ -65,8 +66,11 @@ def feature_selection(df, target, test_split, α=50, thresh=50): ### Bich-Tien P
 
     ridge_reg = Ridge(alpha=α)
     ridge_reg.fit(X_train, y_train)
+    
+    # Here we select the features based on its coefficient determined from ridge regression in comparison to the highest absolute value of coefficient.
+    # The threshold determines the features considered. 
     abs_coef = abs(ridge_reg.coef_)
-    abs_coef_percent = abs_coef / max(abs_coef) * 100
+    abs_coef_percent = abs_coef / max(abs_coef) * 100 # Percentage vis-a-vis the highest absolute coefficient 
     get_features = np.where(abs_coef_percent > thresh)[0]
     col_df = list(df.columns)
     list_features = [col_df[i] for i in get_features if col_df[i] != target]
