@@ -192,8 +192,6 @@ def apply_kfold_cross_validation(data_df, label_column_name, model, alpha, test_
         current_model = model
         new_X = X[selected_features]
         for train_index, test_index in cross_val.split(new_X):
-            #print("Train Index: ", train_index, "\n")
-            #print("Test Index: ", test_index)
             X_train, X_test, y_train, y_test = new_X.iloc[train_index], new_X.iloc[test_index], y.iloc[train_index], y.iloc[test_index]
             current_model.fit(X_train, y_train)
             if threshold in mean_scores:
@@ -218,35 +216,41 @@ def apply_kfold_cross_validation(data_df, label_column_name, model, alpha, test_
 
 
 if __name__ == '__main__':
-    #path_to_data = 'HousingData.csv'
-    path_to_data = 'prostate.data'
+    path_to_data = 'prostate.data'  # path to data
+    label_name_to_predict = 'lpsa'  # name of the label to predict
+    maximum_categorical_values = 7  # for data preparation, maximal number of possible different values for a features
+                                    # to be categorical
+    test_split = 0.3  # split between train and test datasets
+    linear_regression = True
+    alpha = 100  # parameter for Ridge Regression. Used only when linear_regression == True
+    # kernel_list = ['linear', 'poly', 'rbf', 'sigmoid']
+    # model = SVR
+
+    # import data managing if it is a .csv or .data file
     try:
         my_data = pd.read_csv(path_to_data, sep=r'\t')
     except:
         my_data = pd.read_table(path_to_data, sep=r'\t')
 
-
-    #label_name_to_predict = 'MEDV'
-    label_name_to_predict = 'lpsa'
-
-    maximum_categorical_values = 2
-
-    kernel_list = ['linear', 'poly', 'rbf', 'sigmoid']
-    #model = SVR
-    model = LinearRegression()
-
+    # preparation of the data (filling Nan, dealing with categorical features ...)
     preprocessed_data = DataPreparation(my_data, limitCategoricalNumerical=maximum_categorical_values)
 
-    test_split = 0.3
+    if linear_regression:
+        model = LinearRegression()  # defining the model
+        threshold_list = [i*5 for i in range(1, 20)]  # list of thresholds to try
+        # cross validation in order to find the best threshold
+        kfold_mean_scores = apply_kfold_cross_validation(preprocessed_data, label_name_to_predict, model, alpha, test_split, threshold_list)
+        best_threshold = min(kfold_mean_scores, key=kfold_mean_scores.get)  # selection of the best threshold
+        # feature selection
+        feature_columns = feature_selection(preprocessed_data, label_name_to_predict, test_split, α=alpha, thresh=best_threshold)
+        preprocessed_data = preprocessed_data[feature_columns + [label_name_to_predict]]
+    else:
+        model = RandomForestRegressor() # if the user doesn't want a linear regression, a random forest is applied
 
-    alpha = 100
-    threshold_list = [i*5 for i in range(1,20)]
-    kfold_mean_scores = apply_kfold_cross_validation(preprocessed_data, label_name_to_predict, model, alpha, test_split, threshold_list)
-    best_threshold = min(kfold_mean_scores, key=kfold_mean_scores.get)
-    feature_columns = feature_selection(preprocessed_data, label_name_to_predict, test_split, α=alpha, thresh=best_threshold)
-    preprocessed_data = preprocessed_data[feature_columns + [label_name_to_predict]]
+    # training and prediction
     y_test, y_test_pred, y_train, y_train_pred = train_test_stage(preprocessed_data, label_name_to_predict, model)
 
+    # computation of metrics
     mse_test_set = assess_prediction(y_test, y_test_pred)
     mse_train_set = assess_prediction(y_train, y_train_pred)
 
