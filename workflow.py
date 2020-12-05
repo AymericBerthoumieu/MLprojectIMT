@@ -238,15 +238,18 @@ if __name__ == '__main__':
 
     # preparation of the data (filling Nan, dealing with categorical features ...)
     preprocessed_data = DataPreparation(my_data, limitCategoricalNumerical=maximum_categorical_values)
-
+    X_train, X_test, y_train, y_test = split_data_train_test(preprocessed_data, label_name_to_predict)
+    
+    #### We will apply the cross validation on this training data ####
+    preprocessed_train_data = pd.concat([X_train, y_train], axis=1, sort=False)
     if linear_regression:
         model = LinearRegression()  # defining the model
         threshold_list = [i*5 for i in range(1, 20)]  # list of thresholds to try
         # cross validation in order to find the best threshold
-        kfold_mean_scores = apply_kfold_cross_validation(preprocessed_data, label_name_to_predict, model, alpha, test_split, threshold_list)
+        kfold_mean_scores = apply_kfold_cross_validation(preprocessed_train_data, label_name_to_predict, model, alpha, test_split, threshold_list)
         best_threshold = min(kfold_mean_scores, key=kfold_mean_scores.get)  # selection of the best threshold
         # feature selection
-        feature_columns = feature_selection(preprocessed_data, label_name_to_predict, test_split, α=alpha, thresh=best_threshold)
+        feature_columns = feature_selection(preprocessed_train_data, label_name_to_predict, test_split, α=alpha, thresh=best_threshold)
         preprocessed_data = preprocessed_data[feature_columns + [label_name_to_predict]]
     else:
         model = RandomForestRegressor() # if the user doesn't want a linear regression, a random forest is applied
