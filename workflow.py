@@ -49,12 +49,12 @@ def DataPreparation(data, limitCategoricalNumerical:int=2): ### Aymeric BERTHOUM
 
 ##################### Bich-Tien PHAN #######################
 
-def feature_selection(df, target, test_split, α=50, thresh=50): ### Bich-Tien PHAN
+def feature_selection(df, target, test_split, α=5, thresh=50): ### Bich-Tien PHAN
     """
     :param df: (pandas DataFrame) data to process
     :param target: (string) label name to predict
     :param test_split: (float) percentage of test data
-    :param α: (float) ridge regression hyperparameter
+    :param α: (float) ridge regression hyperparameter, the maximal value to determine the optimal value of alpha for ridge regression
     :param thresh: (float) parameter to select the significant features
     :return: list of colums to keep after ridge regression
     """
@@ -64,7 +64,22 @@ def feature_selection(df, target, test_split, α=50, thresh=50): ### Bich-Tien P
     y = df[target].to_numpy()
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_split)
 
-    ridge_reg = Ridge(alpha=α)
+    coefs = []
+    error = []
+    ridge_reg = Ridge()
+
+    n_alphas = 200
+    alphas = np.logspace(-5, α , n_alphas)
+    # iterate lambdas
+    for alpha in alphas:
+        # training
+        ridge_reg.set_params(alpha=alpha)
+        ridge_reg.fit(X_train, y_train)
+        coefs.append(ridge_reg.coef_)
+        error.append([alpha, np.mean((ridge_reg.predict(X_test) - y_test) ** 2)])
+    final_alpha = min(error, key = lambda t: t[1])[0]
+    
+    ridge_reg.set_params(alpha=final_alpha)
     ridge_reg.fit(X_train, y_train)
     
     # Here we select the features based on its coefficient determined from ridge regression in comparison to the highest absolute value of coefficient.
@@ -226,9 +241,7 @@ if __name__ == '__main__':
                                     # to be categorical
     test_split = 0.3  # split between train and test datasets
     linear_regression = True
-    alpha = 100  # parameter for Ridge Regression. Used only when linear_regression == True
-    # kernel_list = ['linear', 'poly', 'rbf', 'sigmoid']
-    # model = SVR
+    alpha = 5  # parameter for Ridge Regression selection, represent 10**alpha. Used only when linear_regression == True
 
     # import data managing if it is a .csv or .data file
     try:
